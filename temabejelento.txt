@@ -1,0 +1,11 @@
+A szakdolgozat címe: Kétszemélyes társasjáték applikáció
+A szakdolgozat témája:
+(A témavezetővel konzultálva adja meg 1/2 - 1 oldal terjedelemben szakdolgozat témájának leírását )
+A feladat egy online kétszemélyes kalaha/mancala társasjáték applikáció fejlesztése Unityben. Az alkalmazás célja, hogy két játékos számára bárhol és bármikor
+elérhető legyen a klasszikus kalaha/mancala társasjáték online formában. Emellett az applikációnak tartalmaznia kell egyjátékos módot is, ahol a játékos mesterséges
+intelligencia (AI) ellenfelekkel mérheti össze tudását.
+A projekt célja egy olyan felhasználóbarát applikáció létrehozása, amely könnyen kezelhető és szórakoztató játékélményt nyújt mind kezdő, mind tapasztalt játékosok
+számára. A fejlesztés során a Unity játékfejlesztő platform lehetőségeinek kihasználásával kell biztosítani a modern grafikai megjelenítést és a technikai stabilitást,
+valamint egy intuitív kezelőfelületet, amely elősegíti a játék gyors elsajátítását és élvezetét.
+Egyjátékos módban legyen lehetőség választani a mesterséges intelligencia különböző szintjei közül, hogy a játékosok különböző képességeikhez igazíthassák a kihívás
+mértékét. Az AI ellenfeleknek különböző stratégiákat kell alkalmazniuk, hogy a játék folyamatosan új kihívásokat biztosítson.
