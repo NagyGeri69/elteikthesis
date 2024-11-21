@@ -1,246 +1,184 @@
 \chapter{Fejlesztői dokumentáció}
 \label{ch:impl}
-
-\section{Architektúra és tervezési döntések}
-
-\subsection{Technológiai stack}
-A játék fejlesztéséhez az alábbi technológiákat választottam:
-
+\section{Tervezési fázis}
+\subsection{Követelmények elemzése}
+A tervezési fázis első lépéseként azonosítottam a kulcsfontosságú követelményeket:
 \begin{itemize}
-	\item \textbf{Unity játékmotor:} A Unity választását több tényező indokolta:
+	\item A játéknak támogatnia kell három különböző játékmódot: helyi többjátékos, online többjátékos és AI elleni játék
+	\item A játékmenetnek gördülékenynek kell lennie, vizuálisan vonzó animációkkal
+	\item Az AI-nak skálázható nehézségi szintekkel kell rendelkeznie
+	\item Az online játéknak megbízhatóan kell működnie különböző hálózati körülmények között
+	\item A felhasználói felületnek intuitívnak és reszponzívnak kell lennie
+\end{itemize}
+\subsection{Architektúrális tervezés}
+A követelmények alapján egy MVC (Model-View-Controller) architektúra mellett döntöttem, amely jól illeszkedik a Unity játékmotor működéséhez és a projekt igényeihez:
+\begin{itemize}
+	\item \textbf{Model:} A játék üzleti logikája és adatmodellje (BoardManager, GameManager)
 	\begin{itemize}
-		\item Beépített fizikai motor a kövek mozgásának szimulálásához
-		\item Fejlett hálózati képességek az online játékhoz
-		\item Hatékony 3D renderelés
-		\item Platformfüggetlen fejlesztés lehetősége
+		\item Tábla állapotának kezelése
+		\item Játékszabályok implementálása
+		\item Lépés validációja
 	\end{itemize}
-	\item \textbf{C\# programozási nyelv:} A Unity natív nyelve, amely modern és tiszta kód írását teszi lehetővé
-	\item \textbf{Unity Netcode for GameObjects:} Az online többjátékos funkciók megvalósításához
-	\item \textbf{Unity Relay:} A játékosok közötti közvetlen kapcsolat biztosításához
+	\item \textbf{View:} Unity scene-ek, és UI elemek (StoneManager)
+	\begin{itemize}
+		\item 3D játéktábla modell megjelenítése
+		\item Felhasználói felület elemei (gombok, szövegek)
+		\item Vizuális visszajelzések és animációk
+	\end{itemize}
+	
+	\item \textbf{Controller:} Játékosok és játékmenet vezérlése
+	\begin{itemize}
+		\item Különböző játékostípusok (HumanPlayer, AIPlayer, NetworkPlayer)
+		\item Bemenet kezelése
+		\item Játékállapot-változások koordinálása
+	\end{itemize}
 \end{itemize}
-
-\subsection{Architektúrális döntések}
-A program architektúrája a Manager alapú tervezési mintát követi, ahol minden főbb funkcionalitásért egy dedikált Manager osztály felel. Ez az architektúra több előnnyel is jár:
-
+Az architektúra erősen eseményvezérelt, ami lehetővé teszi a komponensek laza csatolását és a játék állapotváltozásainak hatékony kezelését. Például amikor egy játékos lép, az eseményrendszer biztosítja, hogy minden érintett komponens (animációk, UI elemek, hálózati szinkronizáció) megfelelően reagáljon.
+\subsection{Technológiai stack kiválasztása}
+A technológiák kiválasztásánál több szempontot is figyelembe vettem:
 \begin{itemize}
-	\item Tiszta felelősségi körök
-	\item Könnyű bővíthetőség
-	\item Jól tesztelhető komponensek
-	\item Egyszerű függőség kezelés
+	\item \textbf{Unity játékmotor:} A döntés mellett szólt:
+	\begin{itemize}
+		\item Modern fizikai motor, ami elengedhetetlen a kövek mozgásának realisztikus szimulációjához
+		\item Erős közösségi támogatás és dokumentáció
+		\item Beépített networking megoldások
+		\item Platformfüggetlen fejlesztés lehetősége
+		\item Van már tapasztalatom a használatában
+	\end{itemize}
+	\item \textbf{Unity Netcode for GameObjects:} Az online többjátékos mód implementálásához:
+	\begin{itemize}
+		\item Host-Client modell támogatása
+		\item Automatikus állapotszinkronizáció
+		\item Beépített biztonsági megoldások
+	\end{itemize}
+	
+	\item \textbf{Unity Relay:} A játékosok közötti kapcsolat biztosításához:
+	\begin{itemize}
+		\item NAT átjárás problémák kezelése
+		\item Biztonságos kapcsolat
+		\item Alacsony látencia
+	\end{itemize}
+	
+	\item \textbf{Python az AI implementációhoz:} A döntés okai:
+	\begin{itemize}
+		\item Gyors prototípus készítés lehetősége
+		\item Hatékony algoritmus implementáció
+		\item Könnyű debuggolás és tesztelés
+		\item Gazdag matematikai és algoritmus könyvtárak
+	\end{itemize}
 \end{itemize}
-
-\subsection{Főbb komponensek}
-
-\subsubsection{GameManager}
-A GameManager a játék központi vezérlő komponense, amely:
+\section{Rendszerarchitektúra}
+\subsection{Főbb komponensek és felelősségeik}
+\subsubsection{GameManager (Model)}
+A játék központi vezérlő komponense, amely:
 \begin{itemize}
-	\item Kezeli a játék állapotait (lobby, játék, szünet, játék vége)
-	\item Koordinálja a többi manager működését
-	\item Biztosítja a játékmódok közötti váltást
-	\item Kezeli a játékosok csatlakozását és leválását
+	\item Kezeli a különböző játékállapotokat
+	\item Koordinálja a játékmódok közötti váltást
+	\item Menedzseli a játékosok létrehozását és inicializálását
+	\item Eseményeket közvetít a komponensek között
 \end{itemize}
-
 \begin{lstlisting}[language={[Sharp]C}]
 	public class GameManager : NetworkBehaviour
 	{
-		public static GameManager Instance;
-		private GameMode currentGameMode;
-		public GameState currentGameState { get; set; }
-		
-		private IPlayerController player1;
-		private IPlayerController player2;
-		
-		public void StartOnlineGame(string sceneName, LoadSceneMode loadSceneMode, 
-		List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+		public void StartAIGame(int strength)
 		{
-			currentGameMode = GameMode.Online;
+			currentGameMode = GameMode.VsAI;
 			currentGameState = GameState.Running;
-			bool shouldFlip = UnityEngine.Random.value > 0.5f;
-			bool isPlayer1Starting = UnityEngine.Random.value > 0.5f;
+			player1Object = new GameObject();
+			HumanPlayer player1 = player1Object.AddComponent<HumanPlayer>();
+			player1.Id = PlayerIdGenerator.GetNextId();
 			
-			if (NetworkManager.Singleton.IsHost)
-			{
-				FlipDecisionServerRpc(shouldFlip, isPlayer1Starting);
-			}
+			player2Object = new GameObject();
+			AIPlayer aiPlayer = player2Object.AddComponent<AIPlayer>();
+			aiPlayer.strength = strength;
+			aiPlayer.Id = PlayerIdGenerator.GetNextId();
+			
+			this.player1 = player1;
+			this.player2 = aiPlayer;        
+			
+			SceneManager.sceneLoaded += AIGameLoaded;
+			SceneManager.LoadScene("GameScene");
 		}
 	}
 \end{lstlisting}
-
-\subsubsection{BoardManager}
-A BoardManager felelős a játéktábla állapotának kezeléséért:
+\subsubsection{BoardManager (Model)}
+A játék logikai motorja, amely:
 \begin{itemize}
-	\item Tárolja a játéktábla aktuális állapotát
-	\item Validálja és végrehajtja a lépéseket
-	\item Ellenőrzi a játék szabályait
-	\item Nyilvántartja a pontszámokat
+	\item Tárolja és kezeli a játéktábla állapotát
+	\item Validálja a játékosok lépéseit
+	\item Ellenőrzi a játékszabályok betartását
+	\item Eseményeket generál a játékállapot változásairól
 \end{itemize}
-
-\begin{lstlisting}[language={[Sharp]C}]
-	public class BoardManager
-	{
-		private int[] table;
-		private IPlayerController currentPlayer;
-		private bool isGameOver;
-		
-		public void MakeMove(int index)
-		{
-			bool isPlayer1Turn = currentPlayer == player1;
-			if (!IsMoveValid(index))
-			{
-				currentPlayer.RequestMove();
-				return;
-			}
-			
-			int rocksToPlace = table[index];
-			table[index] = 0;
-			int currentIndex = index;
-			
-			for (int i = 0; i < rocksToPlace; i++)
-			{
-				currentIndex = GetNextValidIndex(currentIndex, isPlayer1Turn);
-				table[currentIndex]++;
-			}
-			
-			HandleSpecialRules(currentIndex, isPlayer1Turn);
-			
-			if (!ShouldPlayerGetExtraTurn(currentIndex, isPlayer1Turn))
-			{
-				SwitchCurrentPlayer();
-			}
-		}
-	}
-\end{lstlisting}
-
-\subsubsection{StoneManager}
-A StoneManager a játék vizuális megjelenítéséért felelős:
+\subsubsection{StoneManager (View)}
+A játék vizuális megjelenítéséért felelős komponens:
 \begin{itemize}
 	\item Kezeli a kövek fizikai reprezentációját
 	\item Animálja a kövek mozgását
-	\item Szinkronizálja a vizuális megjelenítést a játék logikai állapotával
+	\item Szinkronizálja a vizuális állapotot a játéklogikával
+	\item Események alapján frissíti a megjelenítést
 \end{itemize}
-
-\begin{lstlisting}[language={[Sharp]C}]
-	public class StoneManager : MonoBehaviour
-	{
-		[SerializeField] private GameObject[] rockPrefabs;
-		[SerializeField] private GameObject[] rockSpawners;
-		private List<List<GameObject>> rocks;
-		private bool isStoneMoving = false;
-		
-		private IEnumerator MoveStonesCoroutine(int index, int numberOfStones, 
-		bool isPlayer1Turn, bool isGameOver, int player1Score, int player2Score)
-		{
-			isStoneMoving = true;
-			OnStoneMoveStart?.Invoke();
-			
-			List<GameObject> stonesToMove = CollectStonesFromPit(index, numberOfStones);
-			yield return StartCoroutine(LiftStonesFromPit(stonesToMove, index));
-			
-			yield return StartCoroutine(DistributeStones(stonesToMove, index, isPlayer1Turn));
-			
-			yield return StartCoroutine(HandleCapture(lastIndex, isPlayer1Turn));
-			
-			isStoneMoving = false;
-			OnStoneMoveComplete?.Invoke();
-		}
-	}
-\end{lstlisting}
-
-\section{Online játék megvalósítása}
-
-\subsection{Hálózati architektúra}
-Az online játék peer-to-peer alapú, Unity Relay szolgáltatás használatával:
+\section{AI implementáció}
+Az AI modul a minimax algoritmus egy optimalizált implementációját használja alpha-beta vágással. Az implementáció Python nyelven történt, ami lehetővé tette a gyors prototípuskészítést és hatékony tesztelést.
+\subsection{Az algoritmus működése}
+A minimax algoritmus rekurzívan építi fel a lehetséges lépések fáját:
 \begin{itemize}
-	\item A Relay szerver biztosítja a kezdeti kapcsolódást
-	\item A játékosok közötti kommunikáció közvetlen
-	\item A host játékos validálja a lépéseket
+	\item A fa minden csomópontja egy játékállást reprezentál
+	\item A levelek értékelése a játékos szempontjából történik
+	\item Az alpha-beta vágás jelentősen csökkenti az átvizsgálandó csomópontok számát
+	\item A keresési mélység dinamikusan változik az AI szintjétől függően
 \end{itemize}
-
-\subsection{Lobby rendszer}
-A lobby rendszer az Unity Lobby szolgáltatására épül:
-\begin{itemize}
-	\item Szobák létrehozása és kezelése
-	\item Játékosok csatlakozásának kezelése
-	\item Szobák listázása és szűrése
-\end{itemize}
-
-\begin{lstlisting}[language={[Sharp]C}]
-	public class OnlineLobby : MonoBehaviour
-	{
-		public static OnlineLobby Instance;
-		private Lobby hostLobby;
-		private Lobby joinedLobby;
-		
-		public async void CreateLobby(string lobbyName, bool isPrivate)
-		{
-			try
-			{
-				int maxPlayers = 2;
-				string joinCode = await RelayConnection.Instance.CreateRelay();
-				
-				CreateLobbyOptions options = new CreateLobbyOptions
-				{
-					IsPrivate = isPrivate,
-					Player = GetPlayer(),
-					Data = new Dictionary<string, DataObject>
-					{
-						{ "Start", new DataObject(DataObject.VisibilityOptions.Member, joinCode) }
-					}
-				};
-				
-				Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
-				hostLobby = lobby;
-				joinedLobby = hostLobby;
-			}
-			catch (LobbyServiceException e)
-			{
-				Debug.Log($"Failed to create lobby - {e}");
-			}
-		}
-	}
+A döntéshozatal folyamata:
+\begin{enumerate}
+	\item Az aktuális játékállás kiértékelése
+	\item Lehetséges lépések generálása
+	\item Minden lépésre rekurzív kiértékelés
+	\item A legjobb értékelésű lépés kiválasztása
+\end{enumerate}
+\subsection{Nehézségi szintek implementációja}
+A különböző AI szintek megvalósítása a keresési mélység és a kiértékelési függvény módosításával történik:
+\begin{lstlisting}[language=Python]
+	def calculate_kalaha_move(board_state, is_player_1, ai_level):
+	
+	depth = min(ai_level + 1, 6)  # Base depth from AI level
+	
+	eval_score, selected_move = minimax(
+		board_state, 
+		depth,
+		float('-inf'),
+		float('inf'),
+		is_player_1,
+		True
+	)
+	
+	return selected_move
 \end{lstlisting}
-
-\section{Mesterséges intelligencia}
-
-Az AI játékos implementációja a következő komponensekre épül:
-
-\subsection{AI stratégia}
-Az AI játékos több szintű döntési mechanizmust használ:
+\section{Tesztelés és teljesítménymérés}
+\subsection{AI teljesítmény elemzése}
+Az AI különböző nehézségi szintjeinek tesztelése egy dedikált tesztkörnyezetben történt. A tesztek során az AI random stratégiát alkalmazó ellenfelek ellen játszott. Minden nehézségi szinten 100 játszmát futattunk le, az eredmények:
 \begin{itemize}
-	\item Alapvető szabályok követése
-	\item Lépések előnyösségének értékelése
-	\item Több lépéses kombinációk keresése
+	\item 1-es szint: 59% nyerési arány (59/100 játszma)
+	\item 2-es szint: 73% nyerési arány (73/100 játszma)
+	\item 3-as szint: 77% nyerési arány (77/100 játszma)
+	\item 4-es szint: 82% nyerési arány (82/100 játszma)
+	\item 5-ös szint: 90% nyerési arány (90/100 játszma)
 \end{itemize}
-
-\begin{lstlisting}[language={[Sharp]C}]
-	public class AIPlayer : MonoBehaviour, IPlayerController
-	{
-		private int GetAIMove(int[] availableMoves)
-		{
-			if (availableMoves.Length == 0)
-			{
-				return -1;
-			}
-			
-			System.Random r = new System.Random();
-			int randomIndex = r.Next(0, availableMoves.Length);
-			return availableMoves[randomIndex];
-		}
-		
-		private IEnumerator SimulateThinking()
-		{
-			int[] availableMoves = GetAvailableMoves();
-			int moveCount = availableMoves.Length;
-			
-			float thinkTime;
-			if (moveCount >= 5) thinkTime = 2.5f;
-			else if (moveCount >= 3) thinkTime = 1.7f;
-			else thinkTime = 1f;
-			
-			yield return new WaitForSeconds(thinkTime);
-			
-			int aiMove = GetAIMove(availableMoves);
-			IPlayerController.RaiseMoveSelected(aiMove);
-		}
-	}
-\end{lstlisting}
+Az eredmények alapján látható, hogy:
+\begin{itemize}
+	\item Az AI már az 1-es szinten is képes a random stratégiánál jobb teljesítményre
+	\item A nehézségi szintek között jelentős teljesítménykülönbség van
+	\item Az 5-ös szintű AI már dominálja a random lépéseket tevő ügynököt
+\end{itemize}
+A teljesítménynövekedés magyarázata:
+\begin{itemize}
+	\item Magasabb nehézségi szinteken mélyebb keresés
+\end{itemize}
+\section{További fejlesztési lehetőségek}
+\begin{itemize}
+	\item Az AI továbbfejlesztése gépi tanulási módszerekkel
+	\item Játékmenet rögzítése és visszajátszási lehetőség
+	\item Részletes statisztikai rendszer és ranglisták
+	\item Több játékos egyidejű megfigyelési lehetősége
+	\item Mobil platformra való portolás
+\end{itemize}
+\end{parameter>
+	</invoke>

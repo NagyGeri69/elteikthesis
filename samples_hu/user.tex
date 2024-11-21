@@ -23,10 +23,10 @@ A kalaha egy két személyes stratégiai játék, amelyben a játékosok célja 
 	\item A játéktábla 2x6 kisebb gödörből és 2 nagyobb gyűjtőgödörből áll
 	\item Minden kis gödörben kezdetben 4 kő található
 	\item A játékosok felváltva lépnek
-	\item Egy lépés során a játékos kiválaszt egy gödröt a saját oldaláról, és az összes követ egyesével szétosztja az óramutató járásával ellentétes irányban
-	\item Ha az utolsó kő a saját gyűjtőgödörbe kerül, a játékos újra léphet
-	\item Ha az utolsó kő egy üres gödörbe kerül a saját oldalon, a játékos megszerzi ezt a követ és az átellenes gödör köveit is
-	\item A játék akkor ér véget, ha az egyik játékos oldalán minden gödör kiürül
+	\item Egy lépés során a játékos kiválaszt egy gödröt a saját oldaláról, és az összes követ egyesével szétosztja az óramutató járásával megegyező irányban
+	\item Ha az utolsó kő a saját gyűjtőgödörébe kerül, a játékos újra léphet
+	\item Ha az utolsó kő egy üres gödörbe kerül a saját oldalán, a játékos megszerzi ezt a követ és az átellenes gödör köveit is
+	\item A játék véget ér, ha az egyik játékos oldalán minden gödör kiürül, ekkor a másik játékos összegyűjti a maradék köveit. A győztes az aki több követ tudott összegyűjteni.
 \end{enumerate}
 
 \section{A program használata}
@@ -68,19 +68,17 @@ A szobában a játékosok láthatják egymás nevét és státuszát (host/klien
 \subsection{Játékmenet}
 A játék során a játéktábla 3D nézetben jelenik meg. A játékosok felváltva választhatnak gödröt a saját oldalukon kattintással. A program automatikusan végrehajtja a lépést, animálva a kövek mozgását.
 
-% TODO: \usepackage{graphicx} required
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.8\textwidth]{gamestart}
-	\caption{A játéktábla játék közben}
+	\caption{A játéktábla játék kezdetén}
 	\label{fig:game-start}
 \end{figure}
 
 A játék állapotát jelző információk folyamatosan láthatók:
 \begin{itemize}
-	\item Az aktuális játékos jelzése
+	\item Az soron következő játékos jelzése
 	\item A gödrökben lévő kövek száma
-	\item A gyűjtőgödrökben összegyűjtött kövek száma
 \end{itemize}
 
 \section{Hibaelhárítás}
@@ -95,8 +93,8 @@ Ha problémák merülnek fel az online játék során:
 
 \subsection{Ismert hibák}
 \begin{itemize}
-	\item Ritkán előfordulhat, hogy a kövek animációja nem megfelelően jelenik meg
-	\item Egyes esetekben a játékos státusza nem frissül azonnal a szobában
+	\item Ritkán előfordulhat, hogy a kövek mozgatásánál egy kő kiesik/két tároló közé esik.
+	\item Egyes esetekben a játékos neve nem frissül ha a hoszt elindítja a játékot míg a név változtatás nem történt meg.
 \end{itemize}
 
-Ezen hibák általában nem befolyásolják a játék működését, és a következő körre vagy újraindítás után automatikusan javulnak.
+Ezen hibák általában nem befolyásolják a játék működését, és a következő körre vagy lépés után automatikusan javulnak.
