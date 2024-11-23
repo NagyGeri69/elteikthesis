@@ -1,0 +1,34 @@
+flowchart TD
+    Start([User clicks 'Play vs AI'])
+    MainMenu[MainMenu: Process AI game selection]
+    GameInit[GameManager: StartAIGame]
+    
+    subgraph Player Creation
+        CreateHuman[Create HumanPlayer]
+        CreateAI[Create AIPlayer with strength]
+        SetIDs[Assign unique IDs to players]
+    end
+    
+    RandomStart{Random starter selection}
+    
+    subgraph Game Initialization
+        BoardInit[BoardManager: CreateNewGame]
+        SpawnStones[StoneManager: SpawnStartStones]
+        InitDisplay[PitNumberDisplayManager: Set initial numbers]
+    end
+    
+    StartGame[Begin game loop]
+    
+    Start --> MainMenu
+    MainMenu --> GameInit
+    
+    GameInit --> CreateHuman
+    GameInit --> CreateAI
+    CreateHuman --> SetIDs
+    CreateAI --> SetIDs
+    
+    SetIDs --> RandomStart
+    RandomStart --> BoardInit
+    BoardInit --> SpawnStones
+    SpawnStones --> InitDisplay
+    InitDisplay --> StartGame

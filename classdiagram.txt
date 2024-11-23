@@ -1,0 +1,92 @@
+
+classDiagram
+    class GameManager {
+        -GameMode currentGameMode
+        -GameState currentGameState
+        +StartOnlineGame()
+        +StartLocalGame()
+        +StartAIGame()
+        +EndGame()
+        +GetPlayerControllers()
+    }
+
+    class BoardManager {
+        -int[] table
+        +CreateNewGame()
+        +MakeMove()
+        +GetCurrentPlayer()
+        +GetTable()
+    }
+
+    class StoneManager {
+        -bool isStoneMoving
+        +SpawnStartStones()
+        +UpdatePitNumberDisplay()
+        +GetIsStoneMoving()
+    }
+
+    class PitActionTrigger {
+        -int moveToMake
+        +OnMouseDown()
+    }
+
+    class OnlineLobby {
+        -Lobby hostLobby
+        -Lobby joinedLobby
+        +CreateLobby()
+        +JoinLobbyByCode()
+        +LeaveLobby()
+    }
+
+    class RelayConnection {
+        +CreateRelay()
+        +JoinRelay()
+    }
+
+    class PitNumberDisplayManager {
+        +UpdatePitNumberDisplay()
+        +DestroyAllDisplays()
+    }
+
+    IPlayerController <|-- HumanPlayer
+    IPlayerController <|-- NetworkPlayer
+    IPlayerController <|-- AIPlayer
+
+    class IPlayerController {
+        <<interface>>
+        +ulong Id
+        +RequestMove()
+    }
+
+    class HumanPlayer {
+        +RequestMove()
+    }
+
+    class NetworkPlayer {
+        +RequestMove()
+        +OnNetworkSpawn()
+    }
+
+    class AIPlayer {
+        -int strength
+        +RequestMove()
+    }
+
+    GameManager --> BoardManager
+    GameManager --> IPlayerController
+    GameManager --> StoneManager
+    GameManager --> OnlineLobby
+    GameManager --> RelayConnection
+
+    BoardManager --> IPlayerController
+    BoardManager --> StoneManager
+
+    StoneManager --> PitNumberDisplayManager
+
+    OnlineLobby --> RelayConnection
+    OnlineLobby --> IPlayerController
+
+    HumanPlayer --> PitActionTrigger
+    NetworkPlayer --> PitActionTrigger
+    AIPlayer --> BoardManager
+    AIPlayer --> StoneManager

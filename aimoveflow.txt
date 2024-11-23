@@ -1,0 +1,56 @@
+flowchart TD
+    Start([Game Loop Start])
+    
+    subgraph Move Selection
+        HumanTurn[HumanPlayer: RequestMove]
+        AiTurn[AIPlayer: RequestMove]
+        WaitClick[Wait for pit click]
+        RunAI[Execute ai_move.py]
+        GetMove[Get selected move]
+    end
+    
+    subgraph Move Execution
+        ValidateMove[BoardManager: Validate move]
+        ExecuteMove[BoardManager: Make move]
+        
+        subgraph Stone Movement
+            CollectStones[Collect stones from pit]
+            AnimateStones[Animate stone distribution]
+            CheckCapture[Check for capture]
+            UpdateDisplay[Update pit numbers]
+        end
+    end
+    
+    subgraph Game State Check
+        CheckExtra{Extra turn?}
+        CheckGameOver{Game Over?}
+        GameOverScreen[Show game over screen]
+        ReturnMenu[Return to main menu]
+    end
+    
+    Start -->|Human turn| HumanTurn
+    Start -->|AI turn| AiTurn
+    
+    HumanTurn --> WaitClick
+    WaitClick -->|OnMoveSelectedByPit| GetMove
+    
+    AiTurn --> RunAI
+    RunAI --> GetMove
+    
+    GetMove --> ValidateMove
+    ValidateMove -->|Valid| ExecuteMove
+    ValidateMove -->|Not Valid| Start
+    
+    ExecuteMove --> CollectStones
+    CollectStones --> AnimateStones
+    AnimateStones --> CheckCapture
+    CheckCapture --> UpdateDisplay
+    
+    UpdateDisplay --> CheckExtra
+    CheckExtra -->|Yes| Start
+    CheckExtra -->|No| CheckGameOver
+    
+    CheckGameOver -->|Yes| GameOverScreen
+    CheckGameOver -->|No| Start
+    
+    GameOverScreen --> ReturnMenu

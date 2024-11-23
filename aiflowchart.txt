@@ -1,0 +1,72 @@
+flowchart TD
+    Start([User clicks 'Play vs AI'])
+    MainMenu[MainMenu: Loads GameScene]
+    GameInit[GameManager: StartAIGame]
+    CreatePlayers[GameManager: Creates HumanPlayer and AIPlayer]
+    BoardInit[BoardManager: CreateNewGame]
+    SpawnStones[StoneManager: SpawnStartStones]
+    DisplayInit[PitNumberDisplayManager: Updates initial displays]
+    
+    RandomStart{Random starter selection}
+    
+    HumanTurn[HumanPlayer: RequestMove]
+    AiTurn[AIPlayer: RequestMove]
+    
+    WaitClick[PitActionTrigger: Waits for pit click]
+    RunAI[AIPlayer: Runs ai_move.py script]
+    
+    ValidateMove[BoardManager: Validates move]
+    ExecuteMove[BoardManager: MakeMove]
+    AnimateStones[StoneManager: Moves stones animation]
+    UpdateDisplay[PitNumberDisplayManager: Updates numbers]
+    
+    CheckExtra{Extra turn?}
+    CheckGameOver{Game Over?}
+    
+    GameOverScreen[GameManager: Shows game over screen]
+    ReturnMenu[Return to main menu]
+
+    Start --> MainMenu
+    MainMenu --> GameInit
+    GameInit --> CreatePlayers
+    CreatePlayers --> BoardInit
+    BoardInit --> SpawnStones
+    SpawnStones --> DisplayInit
+    DisplayInit --> RandomStart
+    
+    RandomStart -->|Human First| HumanTurn
+    RandomStart -->|AI First| AiTurn
+    
+    HumanTurn --> WaitClick
+    WaitClick -->|OnMoveSelectedByPit| ValidateMove
+    
+    AiTurn --> RunAI
+    RunAI -->|Returns move| ValidateMove
+    
+    ValidateMove -->|Valid| ExecuteMove
+    ExecuteMove -->|OnMoveMade| AnimateStones
+    AnimateStones --> UpdateDisplay
+    
+    UpdateDisplay --> CheckExtra
+    CheckExtra -->|Yes| HumanTurn
+    CheckExtra -->|No| CheckGameOver
+    
+    CheckGameOver -->|Yes| GameOverScreen
+    CheckGameOver -->|No, Human's turn| HumanTurn
+    CheckGameOver -->|No, AI's turn| AiTurn
+    
+    GameOverScreen -->|OnGameOver| ReturnMenu
+
+    subgraph AI Move Calculation
+        RunAI -->|1| LoadBoard[Get current board state]
+        LoadBoard -->|2| CalcMoves[Calculate valid moves]
+        CalcMoves -->|3| Minimax[Run minimax algorithm]
+        Minimax -->|4| SelectMove[Select best move]
+    end
+
+    subgraph Stone Movement
+        ExecuteMove -->|1| CollectStones[Collect stones from pit]
+        CollectStones -->|2| DistributeStones[Distribute stones]
+        DistributeStones -->|3| CheckCapture[Check for capture]
+        CheckCapture -->|4| UpdateScores[Update scores]
+    end
